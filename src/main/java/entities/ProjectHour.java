@@ -18,7 +18,7 @@ public class ProjectHour {
     private Double projecthourHoursSpendt;
     @Basic
     @Column(name = "projecthour_description")
-    private Integer projecthourDescription;
+    private String projecthourDescription;
     @Basic
     @Column(name = "projecthour_createdAt")
     private LocalDateTime projecthourCreateAt;
@@ -50,8 +50,7 @@ public class ProjectHour {
     public ProjectHour() {
     }
 
-    public ProjectHour(Integer projecthourId, Double projecthourHoursSpendt, Integer projecthourDescription, Task task, Developer developer) {
-        this.projecthourId = projecthourId;
+    public ProjectHour(Double projecthourHoursSpendt, String projecthourDescription, Task task, Developer developer) {
         this.projecthourHoursSpendt = projecthourHoursSpendt;
         this.projecthourDescription = projecthourDescription;
         this.task = task;
@@ -74,11 +73,11 @@ public class ProjectHour {
         this.projecthourHoursSpendt = projecthourHoursSpendt;
     }
 
-    public Integer getProjecthourDescription() {
+    public String getProjecthourDescription() {
         return projecthourDescription;
     }
 
-    public void setProjecthourDescription(Integer projecthourDescription) {
+    public void setProjecthourDescription(String projecthourDescription) {
         this.projecthourDescription = projecthourDescription;
     }
 

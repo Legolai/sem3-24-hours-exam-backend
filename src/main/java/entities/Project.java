@@ -124,4 +124,8 @@ public class Project {
     public int hashCode() {
         return Objects.hash(projectId);
     }
+
+    public void addDeveloper(Developer developer) {
+        developers.add(developer);
+    }
 }

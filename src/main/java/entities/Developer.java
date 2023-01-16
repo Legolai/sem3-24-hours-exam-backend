@@ -82,4 +82,8 @@ public class Developer {
     public int hashCode() {
         return Objects.hash(developerId);
     }
+
+    public void addProject(Project project) {
+        projects.add(project);
+    }
 }
