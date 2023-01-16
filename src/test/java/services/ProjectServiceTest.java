@@ -1,7 +1,9 @@
-package daos;
+package services;
 
-import entities.Account;
-import entities.Role;
+import daos.AccountDao;
+import dtos.InvoiceDTO;
+import dtos.ProjectDTO;
+import entities.*;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,29 +12,30 @@ import utils.EMF_Creator;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
-class AccountDaoTest {
+class ProjectServiceTest {
 
     private static EntityManagerFactory emf;
-    private static AccountDao facade;
+    private static ProjectService facade;
 
     private Account account1;
     private Account account2;
 
+    private Project project;
 
     @BeforeAll
     public static void setUpClass() {
         emf = EMF_Creator.createEntityManagerFactoryForTest();
-        facade = AccountDao.getInstance(emf);
+        facade = ProjectService.getInstance(emf);
     }
 
     @AfterAll
     public static void tearDownClass() {
-    //        Clean up database after test is done or use a persistence unit with drop-and-create to start up clean on every test
+        //        Clean up database after test is done or use a persistence unit with drop-and-create to start up clean on every test
     }
 
     // Set up the DataBase in a known state BEFORE EACH TEST
@@ -55,10 +58,24 @@ class AccountDaoTest {
             account2 = new Account("Peter", "peter@email.com", "22334455", "test2");
             account2.addRole(role2);
 
+            project = new Project("Horse", "Some Horse", account1);
+            Developer dev = new Developer(100.0, account2);
+            project.addDeveloper(dev);
+            Task task1 = new Task("Do something", "A lot of work", project);
+
+            ProjectHour projectHour1 = new ProjectHour(10.0, "A lot of work", task1, dev);
+            ProjectHour projectHour2 = new ProjectHour(5.0, "some more work", task1, dev);
+
+
             em.persist(role1);
             em.persist(role2);
             em.persist(account1);
             em.persist(account2);
+            em.persist(project);
+            em.persist(dev);
+            em.persist(task1);
+            em.persist(projectHour1);
+            em.persist(projectHour2);
 
             em.getTransaction().commit();
         } finally {
@@ -66,39 +83,17 @@ class AccountDaoTest {
         }
     }
 
+
     @Test
-    public void create() {
-        Account actual = facade.create(new Account("New", "new@gmail.com", "1234501", "text"));
-        assertTrue(actual.getAccountId() > 0);
+    public void getProjects(){
+        List<ProjectDTO> actual = facade.getAll();
+        assertTrue(actual.contains(new ProjectDTO(project)));
     }
-
     @Test
-    public void get() {
-        Account actual = facade.getById(account1.getAccountId());
-
-        assertEquals(account1, actual);
-    }
-
-    @Test
-    public void getAll() {
-        List<Account> actual = facade.getAll();
-
-        assertTrue(actual.contains(account1));
-        assertTrue(actual.contains(account2));
-    }
-
-    @Test
-    public void update() {
-        account1.setAccountName("henrik");
-        assertDoesNotThrow(() -> facade.update(account1));
-        assertEquals(account1.getAccountName(), facade.getById(account1.getAccountId()).getAccountName());
-
-    }
-
-    @Test
-    public void deleteById() {
-        assertDoesNotThrow(() -> facade.deleteById(account1.getAccountId()));
-        assertEquals(null, facade.getById(account1.getAccountId()));
+    public void getProjectInvoice(){
+        InvoiceDTO actual = facade.getProjectInvoice(project.getProjectId());
+        InvoiceDTO expected = new InvoiceDTO(project);
+        assertEquals(expected,actual);
     }
 
 }

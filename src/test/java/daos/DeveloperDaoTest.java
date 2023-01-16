@@ -1,6 +1,7 @@
 package daos;
 
 import entities.Account;
+import entities.Developer;
 import entities.Role;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -14,25 +15,22 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
-class AccountDaoTest {
-
+class DeveloperDaoTest {
     private static EntityManagerFactory emf;
-    private static AccountDao facade;
+    private static DeveloperDao facade;
 
-    private Account account1;
-    private Account account2;
-
+    private Developer dev1;
+    private Developer dev2;
 
     @BeforeAll
     public static void setUpClass() {
         emf = EMF_Creator.createEntityManagerFactoryForTest();
-        facade = AccountDao.getInstance(emf);
+        facade = DeveloperDao.getInstance(emf);
     }
 
     @AfterAll
     public static void tearDownClass() {
-    //        Clean up database after test is done or use a persistence unit with drop-and-create to start up clean on every test
+        //        Clean up database after test is done or use a persistence unit with drop-and-create to start up clean on every test
     }
 
     // Set up the DataBase in a known state BEFORE EACH TEST
@@ -48,17 +46,20 @@ class AccountDaoTest {
             em.createNamedQuery("account.deleteAllRows").executeUpdate();
             em.createNamedQuery("role.deleteAllRows").executeUpdate();
 
-            Role role1 = new Role("admin");
-            Role role2 = new Role("developer");
-            account1 = new Account("Jens", "jens@email.com", "12345678", "test1");
-            account1.addRole(role1);
-            account2 = new Account("Peter", "peter@email.com", "22334455", "test2");
-            account2.addRole(role2);
 
-            em.persist(role1);
+            Role role2 = new Role("developer");
+            Account account1 = new Account("Jens", "jens@email.com", "12345678", "test1");
+            account1.addRole(role2);
+            Account account2 = new Account("Peter", "peter@email.com", "22334455", "test2");
+            account2.addRole(role2);
+            dev1 = new Developer(100.0, account1);
+            dev2 = new Developer(100.0, account2);
+
             em.persist(role2);
             em.persist(account1);
             em.persist(account2);
+            em.persist(dev1);
+            em.persist(dev2);
 
             em.getTransaction().commit();
         } finally {
@@ -68,37 +69,39 @@ class AccountDaoTest {
 
     @Test
     public void create() {
-        Account actual = facade.create(new Account("New", "new@gmail.com", "1234501", "text"));
-        assertTrue(actual.getAccountId() > 0);
+        Account account = new Account("New", "new@gmail.com", "1234501", "text");
+        facade.executeInsideTransaction((em) -> em.persist(account));
+        Developer actual = facade.create(new Developer(400.0, account));
+        assertTrue(actual.getDeveloperId() > 0);
     }
 
     @Test
     public void get() {
-        Account actual = facade.getById(account1.getAccountId());
+        Developer actual = facade.getById(dev1.getDeveloperId());
 
-        assertEquals(account1, actual);
+        assertEquals(dev1, actual);
     }
 
     @Test
     public void getAll() {
-        List<Account> actual = facade.getAll();
+        List<Developer> actual = facade.getAll();
 
-        assertTrue(actual.contains(account1));
-        assertTrue(actual.contains(account2));
+        assertTrue(actual.contains(dev1));
+        assertTrue(actual.contains(dev2));
     }
 
     @Test
     public void update() {
-        account1.setAccountName("henrik");
-        assertDoesNotThrow(() -> facade.update(account1));
-        assertEquals(account1.getAccountName(), facade.getById(account1.getAccountId()).getAccountName());
+        dev1.setDeveloperBillingPrHour(450.0);
+        assertDoesNotThrow(() -> facade.update(dev1));
+        assertEquals(dev1.getDeveloperBillingPrHour(), facade.getById(dev1.getDeveloperId()).getDeveloperBillingPrHour());
 
     }
 
     @Test
     public void deleteById() {
-        assertDoesNotThrow(() -> facade.deleteById(account1.getAccountId()));
-        assertEquals(null, facade.getById(account1.getAccountId()));
+        assertDoesNotThrow(() -> facade.deleteById(dev1.getDeveloperId()));
+        assertEquals(null, facade.getById(dev1.getDeveloperId()));
     }
 
 }

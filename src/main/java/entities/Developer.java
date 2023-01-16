@@ -30,6 +30,15 @@ public class Developer {
             inverseJoinColumns = @JoinColumn(name = "project_ID"))
     private Set<Project> projects  = new LinkedHashSet<>();
 
+
+    public Developer() {
+    }
+
+    public Developer(Double developerBillingPrHour, Account account) {
+        this.developerBillingPrHour = developerBillingPrHour;
+        this.account = account;
+    }
+
     public Integer getDeveloperId() {
         return developerId;
     }

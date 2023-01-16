@@ -4,6 +4,7 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -33,6 +34,9 @@ public class Project {
 
     @ManyToMany(mappedBy = "projects")
     private Set<Developer> developers = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "project")
+    private Set<Task> tasks;
     @PrePersist
     public void onCreate() {
         LocalDateTime now = LocalDateTime.now();
@@ -96,6 +100,14 @@ public class Project {
         this.projectUpdatedAt = projectUpdatedAt;
     }
 
+    public Set<Task> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(Set<Task> tasks) {
+        this.tasks = tasks;
+    }
+
     public Account getAccount() {
         return account;
     }
@@ -127,5 +139,9 @@ public class Project {
 
     public void addDeveloper(Developer developer) {
         developers.add(developer);
+    }
+
+    public void addDevelopers(List<Developer> developers) {
+        developers.addAll(developers);
     }
 }

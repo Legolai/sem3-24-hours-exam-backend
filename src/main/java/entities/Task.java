@@ -33,7 +33,7 @@ public class Task {
     @JoinColumn(name = "project_ID", nullable = false)
     private Project project;
     @ManyToOne
-    @JoinColumn(name = "task_parentTask_ID", nullable = false)
+    @JoinColumn(name = "task_parentTask_ID")
     private Task parentTask;
     @OneToMany(mappedBy = "parentTask")
     private Collection<Task> subtasks;
