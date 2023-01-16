@@ -29,8 +29,8 @@ public class Account {
 
     @ManyToMany
     @JoinTable(name = "accounts_has_roles",
-            joinColumns = @JoinColumn(name = "account_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
+            joinColumns = @JoinColumn(name = "account_ID"),
+            inverseJoinColumns = @JoinColumn(name = "role_ID"))
     private Set<Role> roles  = new LinkedHashSet<>();;
 
     @Column(name = "account_createdAt")

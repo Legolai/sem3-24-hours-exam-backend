@@ -15,7 +15,7 @@ public class ProjectHour {
     private Integer projecthourId;
     @Basic
     @Column(name = "projecthour_hoursSpendt")
-    private Integer projecthourHoursSpendt;
+    private Double projecthourHoursSpendt;
     @Basic
     @Column(name = "projecthour_description")
     private Integer projecthourDescription;
@@ -50,7 +50,7 @@ public class ProjectHour {
     public ProjectHour() {
     }
 
-    public ProjectHour(Integer projecthourId, Integer projecthourHoursSpendt, Integer projecthourDescription, Task task, Developer developer) {
+    public ProjectHour(Integer projecthourId, Double projecthourHoursSpendt, Integer projecthourDescription, Task task, Developer developer) {
         this.projecthourId = projecthourId;
         this.projecthourHoursSpendt = projecthourHoursSpendt;
         this.projecthourDescription = projecthourDescription;
@@ -66,11 +66,11 @@ public class ProjectHour {
         this.projecthourId = projecthourId;
     }
 
-    public Integer getProjecthourHoursSpendt() {
+    public Double getProjecthourHoursSpendt() {
         return projecthourHoursSpendt;
     }
 
-    public void setProjecthourHoursSpendt(Integer projecthourHoursSpendt) {
+    public void setProjecthourHoursSpendt(Double projecthourHoursSpendt) {
         this.projecthourHoursSpendt = projecthourHoursSpendt;
     }
 

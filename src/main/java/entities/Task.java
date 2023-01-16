@@ -11,9 +11,10 @@ import java.util.Objects;
 @Table(name = "Tasks")
 public class Task {
 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "task_ID")
-    private String taskId;
+    private Long taskId;
 
     @Column(name = "task_title")
     private String taskTitle;
@@ -60,11 +61,11 @@ public class Task {
         this.project = project;
     }
 
-    public String getTaskId() {
+    public Long getTaskId() {
         return taskId;
     }
 
-    public void setTaskId(String taskId) {
+    public void setTaskId(Long taskId) {
         this.taskId = taskId;
     }
 

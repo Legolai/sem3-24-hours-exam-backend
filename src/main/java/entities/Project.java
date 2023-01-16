@@ -3,7 +3,9 @@ package entities;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @NamedQuery(name = "project.deleteAllRows", query = "DELETE from Project ")
@@ -20,9 +22,6 @@ public class Project {
     @Column(name = "project_description")
     private String projectDescription;
     @Basic
-    @Column(name = "projects_alias")
-    private String projectsAlias;
-    @Basic
     @Column(name = "project_createdAt")
     private LocalDateTime projectCreatedAt;
     @Basic
@@ -32,6 +31,8 @@ public class Project {
     @JoinColumn(name = "account_ID", nullable = false)
     private Account account;
 
+    @ManyToMany(mappedBy = "projects")
+    private Set<Developer> developers = new LinkedHashSet<>();
     @PrePersist
     public void onCreate() {
         LocalDateTime now = LocalDateTime.now();
@@ -48,11 +49,9 @@ public class Project {
     public Project() {
     }
 
-    public Project(Integer projectId, String projectName, String projectDescription, String projectsAlias, Account account) {
-        this.projectId = projectId;
+    public Project(String projectName, String projectDescription, Account account) {
         this.projectName = projectName;
         this.projectDescription = projectDescription;
-        this.projectsAlias = projectsAlias;
         this.account = account;
     }
 
@@ -81,14 +80,6 @@ public class Project {
         this.projectDescription = projectDescription;
     }
 
-    public String getProjectsAlias() {
-        return projectsAlias;
-    }
-
-    public void setProjectsAlias(String projectsAlias) {
-        this.projectsAlias = projectsAlias;
-    }
-
     public LocalDateTime getProjectCreatedAt() {
         return projectCreatedAt;
     }
@@ -111,6 +102,14 @@ public class Project {
 
     public void setAccount(Account account) {
         this.account = account;
+    }
+
+    public Set<Developer> getDevelopers() {
+        return developers;
+    }
+
+    public void setDevelopers(Set<Developer> developers) {
+        this.developers = developers;
     }
 
     @Override
