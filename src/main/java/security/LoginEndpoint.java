@@ -10,16 +10,15 @@ import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import facades.UserFacade;
+import dtos.AccountDTO;
+
 import java.util.Date;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import entities.User;
+
 import errorhandling.API_Exception;
 
 import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -29,6 +28,7 @@ import errorhandling.GenericExceptionMapper;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.core.SecurityContext;
 
+import services.AccountService;
 import utils.EMF_Creator;
 
 @Path("login")
@@ -36,7 +36,7 @@ public class LoginEndpoint {
 
     public static final int TOKEN_EXPIRE_TIME = 1000 * 60 * 30; //30 min
     private static final EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory();
-    public static final UserFacade USER_FACADE = UserFacade.getUserFacade(EMF);
+    public static final AccountService ACCOUNT_SERVICE = AccountService.geInstance(EMF);
 
     @Context
     SecurityContext securityContext;
@@ -45,21 +45,21 @@ public class LoginEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response login(String jsonString) throws AuthenticationException, API_Exception {
-        String username;
+        String email;
         String password;
         try {
             JsonObject json = JsonParser.parseString(jsonString).getAsJsonObject();
-            username = json.get("username").getAsString();
+            email = json.get("email").getAsString();
             password = json.get("password").getAsString();
         } catch (Exception e) {
            throw new API_Exception("Malformed JSON Suplied",400,e);
         }
 
         try {
-            User user = USER_FACADE.getVeryfiedUser(username, password);
-            String token = createToken(username, user.getRolesAsStrings());
+            AccountDTO account = ACCOUNT_SERVICE.getVerifiedAccount(email, password);
+            String token = createToken(account);
             JsonObject responseJson = new JsonObject();
-            responseJson.addProperty("username", username);
+            responseJson.addProperty("email", email);
             responseJson.addProperty("token", token);
             return Response.ok(new Gson().toJson(responseJson)).build();
 
@@ -72,10 +72,10 @@ public class LoginEndpoint {
         throw new AuthenticationException("Invalid username or password! Please try again");
     }
 
-    private String createToken(String userName, List<String> roles) throws JOSEException {
+    private String createToken(AccountDTO account) throws JOSEException {
 
         StringBuilder res = new StringBuilder();
-        for (String string : roles) {
+        for (String string : account.getRoles()) {
             res.append(string);
             res.append(",");
         }
@@ -85,8 +85,10 @@ public class LoginEndpoint {
         JWSSigner signer = new MACSigner(SharedSecret.getSharedKey());
         Date date = new Date();
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                .subject(userName)
-                .claim("username", userName)
+                .subject(account.getAccountEmail())
+                .claim("email", account.getAccountEmail())
+                .claim("name", account.getAccountName())
+                .claim("id", account.getAccountId())
                 .claim("roles", rolesAsString)
                 .claim("issuer", issuer)
                 .issueTime(date)

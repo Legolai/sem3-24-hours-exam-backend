@@ -1,20 +1,20 @@
 package rest;
 
-import com.google.gson.Gson;
-import entities.User;
-import java.util.List;
+import entities.Account;
+import utils.EMF_Creator;
+
 import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
-import utils.EMF_Creator;
+import javax.ws.rs.core.UriInfo;
+import java.util.List;
 
 /**
  * @author lam@cphbusiness.dk
@@ -43,8 +43,8 @@ public class DemoResource {
 
         EntityManager em = EMF.createEntityManager();
         try {
-            TypedQuery<User> query = em.createQuery ("select u from User u",entities.User.class);
-            List<User> users = query.getResultList();
+            TypedQuery<Account> query = em.createQuery ("select u from Account u",entities.Account.class);
+            List<Account> users = query.getResultList();
             return "[" + users.size() + "]";
         } finally {
             em.close();
