@@ -36,7 +36,7 @@ public class LoginEndpoint {
 
     public static final int TOKEN_EXPIRE_TIME = 1000 * 60 * 30; //30 min
     private static final EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory();
-    public static final AccountService ACCOUNT_SERVICE = AccountService.geInstance(EMF);
+    public static final AccountService ACCOUNT_SERVICE = AccountService.getInstance(EMF);
 
     @Context
     SecurityContext securityContext;

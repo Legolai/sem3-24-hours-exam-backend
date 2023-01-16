@@ -19,7 +19,7 @@ public class AccountService {
     private AccountService() {
     }
 
-    public static AccountService geInstance(EntityManagerFactory _emf) {
+    public static AccountService getInstance(EntityManagerFactory _emf) {
         if (instance == null) {
             emf = _emf;
             accountDao = AccountDao.getInstance(emf);
