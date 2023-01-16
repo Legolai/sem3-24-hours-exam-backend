@@ -1,22 +1,24 @@
 package daos;
 
-import entities.Account;
+import entities.Project;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
-public class AccountDao implements IDao<Account, Integer>{
+public class ProjectDao implements IDao<Project, Integer> {
 
     private static EntityManagerFactory emf;
-    private static AccountDao instance;
+    private static ProjectDao instance;
 
-    public AccountDao() {}
-    public static AccountDao getInstance(EntityManagerFactory _emf) {
+    public ProjectDao() {
+    }
+
+    public static ProjectDao getInstance(EntityManagerFactory _emf) {
         if (instance == null) {
             emf = _emf;
-            instance = new AccountDao();
+            instance = new ProjectDao();
         }
         return instance;
     }
@@ -28,27 +30,26 @@ public class AccountDao implements IDao<Account, Integer>{
 
 
     @Override
-    public Account getById(Integer key) {
-        return executeWithClose((em) -> em.find(Account.class, key));
+    public Project getById(Integer key) {
+        return executeWithClose((em) -> em.find(Project.class, key));
     }
 
     @Override
-    public List<Account> getAll() {
+    public List<Project> getAll() {
         return executeWithClose((em) -> {
-            TypedQuery<Account> query = em.createQuery("SELECT a FROM Account a", Account.class);
+            TypedQuery<Project> query = em.createQuery("SELECT p FROM Project p", Project.class);
             return query.getResultList();
         });
     }
 
+
     @Override
     public void deleteById(Integer key) {
         executeInsideTransaction((em) -> {
-            Account a = em.find(Account.class, key);
-            if (a != null) {
-                em.remove(a);
+            Project p = em.find(Project.class, key);
+            if (p != null) {
+                em.remove(p);
             }
         });
     }
-
-
 }

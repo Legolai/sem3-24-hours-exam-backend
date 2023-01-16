@@ -1,22 +1,23 @@
 package daos;
 
-import entities.Account;
+import entities.ProjectHour;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
-public class AccountDao implements IDao<Account, Integer>{
-
+public class ProjectHourDao implements IDao<ProjectHour, Integer> {
     private static EntityManagerFactory emf;
-    private static AccountDao instance;
+    private static ProjectHourDao instance;
 
-    public AccountDao() {}
-    public static AccountDao getInstance(EntityManagerFactory _emf) {
+    public ProjectHourDao() {
+    }
+
+    public static ProjectHourDao getInstance(EntityManagerFactory _emf) {
         if (instance == null) {
             emf = _emf;
-            instance = new AccountDao();
+            instance = new ProjectHourDao();
         }
         return instance;
     }
@@ -26,16 +27,15 @@ public class AccountDao implements IDao<Account, Integer>{
         return emf.createEntityManager();
     }
 
-
     @Override
-    public Account getById(Integer key) {
-        return executeWithClose((em) -> em.find(Account.class, key));
+    public ProjectHour getById(Integer key) {
+        return executeWithClose((em) -> em.find(ProjectHour.class, key));
     }
 
     @Override
-    public List<Account> getAll() {
+    public List<ProjectHour> getAll() {
         return executeWithClose((em) -> {
-            TypedQuery<Account> query = em.createQuery("SELECT a FROM Account a", Account.class);
+            TypedQuery<ProjectHour> query = em.createQuery("SELECT ph FROM ProjectHour ph", ProjectHour.class);
             return query.getResultList();
         });
     }
@@ -43,12 +43,10 @@ public class AccountDao implements IDao<Account, Integer>{
     @Override
     public void deleteById(Integer key) {
         executeInsideTransaction((em) -> {
-            Account a = em.find(Account.class, key);
+            ProjectHour a = em.find(ProjectHour.class, key);
             if (a != null) {
                 em.remove(a);
             }
         });
     }
-
-
 }
