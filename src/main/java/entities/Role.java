@@ -1,35 +1,23 @@
 package entities;
 
-import java.io.Serializable;
-import java.util.List;
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.persistence.*;
+import java.util.*;
 
-/**
- *
- * @author Plaul
- */
 @Entity
-@Table(name = "roles")
-public class Role implements Serializable {
+@NamedQuery(name = "role.deleteAllRows", query = "DELETE from Role ")
+@Table(name = "Roles")
+public class Role {
 
-    private static final long serialVersionUID = 1L;
     @Id
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "role_name", length = 20)
+    @Column(name = "role_name")
     private String roleName;
-    
-    @ManyToMany(mappedBy = "roleList")
-    private List<User> userList;
+
+    @Column(name = "roles_description")
+    private String rolesDescription;
+
+    @ManyToMany(mappedBy = "roles")
+    private Set<Account> accounts = new LinkedHashSet<>();
+
 
     public Role() {
     }
@@ -37,6 +25,7 @@ public class Role implements Serializable {
     public Role(String roleName) {
         this.roleName = roleName;
     }
+
 
     public String getRoleName() {
         return roleName;
@@ -46,11 +35,32 @@ public class Role implements Serializable {
         this.roleName = roleName;
     }
 
-    public List<User> getUserList() {
-        return userList;
+    public String getRolesDescription() {
+        return rolesDescription;
     }
 
-    public void setUserList(List<User> userList) {
-        this.userList = userList;
-    }   
+    public void setRolesDescription(String rolesDescription) {
+        this.rolesDescription = rolesDescription;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Role role = (Role) o;
+        return roleName.equals(role.roleName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(roleName);
+    }
+
+    public Set<Account> getAccounts() {
+        return accounts;
+    }
+
+    public void setAccounts(Set<Account> accounts) {
+        this.accounts = accounts;
+    }
 }
