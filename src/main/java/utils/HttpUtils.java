@@ -2,13 +2,12 @@ package utils;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 
 public class HttpUtils {
 
-    public static String fetchData(String _url) throws MalformedURLException, IOException {
+    public static String fetchData(String _url) throws IOException {
         URL url = new URL(_url);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");

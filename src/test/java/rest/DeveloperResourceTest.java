@@ -1,35 +1,45 @@
 package rest;
 
-import entities.Account;
-import entities.Role;
+import entities.*;
 import io.restassured.RestAssured;
-import static io.restassured.RestAssured.given;
 import io.restassured.http.ContentType;
 import io.restassured.parsing.Parser;
-import java.net.URI;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.ws.rs.core.UriBuilder;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-import static org.hamcrest.Matchers.equalTo;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import utils.EMF_Creator;
 
-//Disabled
-public class LoginEndpointTest {
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
 
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.*;
+
+class DeveloperResourceTest {
     private static final int SERVER_PORT = 7777;
     private static final String SERVER_URL = "http://localhost/api";
 
     static final URI BASE_URI = UriBuilder.fromUri(SERVER_URL).port(SERVER_PORT).build();
     private static HttpServer httpServer;
+
+
     private static EntityManagerFactory emf;
-    
+
+    private Account admin;
+
+    private Developer developer;
+    private Project project1;
+    private Project project2;
+
+    private ProjectHour projectHour1;
+    private Task task1;
+
     static HttpServer startServer() {
         ResourceConfig rc = ResourceConfig.forApplication(new ApplicationConfig());
         return GrizzlyHttpServerFactory.createHttpServer(BASE_URI, rc);
@@ -52,7 +62,7 @@ public class LoginEndpointTest {
     public static void closeTestServer() {
         //Don't forget this, if you called its counterpart in @BeforeAll
         EMF_Creator.endREST_TestWithDB();
-        
+
         httpServer.shutdownNow();
     }
 
@@ -71,21 +81,37 @@ public class LoginEndpointTest {
             em.createNamedQuery("account.deleteAllRows").executeUpdate();
             em.createNamedQuery("role.deleteAllRows").executeUpdate();
 
-            Role userRole = new Role("user");
+            Role userRole = new Role("developer");
             Role adminRole = new Role("admin");
             em.persist(userRole);
             em.persist(adminRole);
 
             Account user = new Account("user", "user@email.com", "12345678", "test");
             user.addRole(userRole);
-            Account admin = new Account("admin", "admin@email.com", "22334455", "test");
+            admin = new Account("admin", "admin@email.com", "22334455", "test");
             admin.addRole(adminRole);
-            Account both = new Account("user_admin", "user_admin@email.com", "22554455", "test");
-            both.addRole(userRole);
-            both.addRole(adminRole);
+
+
+            project1 = new Project("ProjectTest", "Some Project", admin);
+            project2 = new Project("ProjectTest2", "Some Project2", admin);
+
+            developer = new Developer(100.0, user);
+            project1.addDeveloper(developer);
+            developer.addProject(project1);
+            task1 = new Task("Do something", "A lot of work", project1);
+
+            projectHour1 = new ProjectHour(10.0, "A lot of work", task1, developer);
+            ProjectHour projectHour2 = new ProjectHour(5.0, "some more work", task1, developer);
+
             em.persist(user);
             em.persist(admin);
-            em.persist(both);
+            em.persist(project1);
+            em.persist(project2);
+            em.persist(developer);
+            em.persist(task1);
+            em.persist(projectHour1);
+            em.persist(projectHour2);
+
             //System.out.println("Saved test data to database");
             em.getTransaction().commit();
         } finally {
@@ -119,109 +145,57 @@ public class LoginEndpointTest {
     }
 
     @Test
-    public void testRestNoAuthenticationRequired() {
-        given()
-                .contentType("application/json")
-                .when()
-                .get("/info/").then()
-                .statusCode(200)
-                .body("msg", equalTo("Hello anonymous"));
-    }
-
-    @Test
-    public void testRestForAdmin() {
+    void getDevelopersNotInProject() {
         login("admin@email.com", "test");
         given()
                 .contentType("application/json")
                 .accept(ContentType.JSON)
                 .header("x-access-token", securityToken)
                 .when()
-                .get("/info/admin").then()
+                .get("developers/project/"+project1.getProjectId()+"/not").then()
                 .statusCode(200)
-                .body("msg", equalTo("Hello to (admin) User: admin@email.com"));
+                .body("", hasSize(0));
     }
 
     @Test
-    public void testRestForUser() {
+    void createProjectHours() {
         login("user@email.com", "test");
+        String json = String.format("{hoursSpent: %d, taskId: %d, accountId: %d, description: \"%s\"}", 10, task1.getTaskId(), developer.getAccount().getAccountId(), "I did something");
         given()
                 .contentType("application/json")
+                .body(json)
+                .accept(ContentType.JSON)
                 .header("x-access-token", securityToken)
                 .when()
-                .get("/info/user").then()
+                .post("developers/project-hours").then()
                 .statusCode(200)
-                .body("msg", equalTo("Hello to User: user@email.com"));
+                .body("projecthourId", notNullValue());
     }
 
     @Test
-    public void testAutorizedUserCannotAccesAdminPage() {
+    void updateProjectHour() {
         login("user@email.com", "test");
+        String json = String.format("{hoursSpendt: %d, taskId: %d, accountId: %d, description: \"%s\"}", 40, task1.getTaskId(), developer.getAccount().getAccountId(), "I did something");
         given()
                 .contentType("application/json")
+                .body(json)
+                .accept(ContentType.JSON)
                 .header("x-access-token", securityToken)
                 .when()
-                .get("/info/admin").then() //Call Admin endpoint as user
-                .statusCode(401);
+                .put("developers/project-hours/" + projectHour1.getProjecthourId()).then()
+                .statusCode(200);
+
     }
 
     @Test
-    public void testAutorizedAdminCannotAccesUserPage() {
-        login("admin@email.com", "test");
-        given()
-                .contentType("application/json")
-                .header("x-access-token", securityToken)
-                .when()
-                .get("/info/user").then() //Call User endpoint as Admin
-                .statusCode(401);
-    }
-
-    @Test
-    public void testRestForMultiRole1() {
-        login("user_admin@email.com", "test");
+    void deleteProjectHour() {
+        login("user@email.com", "test");
         given()
                 .contentType("application/json")
                 .accept(ContentType.JSON)
                 .header("x-access-token", securityToken)
                 .when()
-                .get("/info/admin").then()
-                .statusCode(200)
-                .body("msg", equalTo("Hello to (admin) User: user_admin@email.com"));
+                .delete("developers/project-hours/" + projectHour1.getProjecthourId()).then()
+                .statusCode(200);
     }
-
-    @Test
-    public void testRestForMultiRole2() {
-        login("user_admin@email.com", "test");
-        given()
-                .contentType("application/json")
-                .header("x-access-token", securityToken)
-                .when()
-                .get("/info/user").then()
-                .statusCode(200)
-                .body("msg", equalTo("Hello to User: user_admin@email.com"));
-    }
-
-    @Test
-    public void userNotAuthenticated() {
-        logOut();
-        given()
-                .contentType("application/json")
-                .when()
-                .get("/info/user").then()
-                .statusCode(403)
-                .body("code", equalTo(403))
-                .body("message", equalTo("Not authenticated - do login"));
-    }
-
-    @Test
-    public void adminNotAuthenticated() {
-        logOut();
-        given()
-                .contentType("application/json")
-                .when()
-                .get("/info/user").then()
-                .statusCode(403)
-                .body("code", equalTo(403))
-                .body("message", equalTo("Not authenticated - do login"));
-    }
-
 }
