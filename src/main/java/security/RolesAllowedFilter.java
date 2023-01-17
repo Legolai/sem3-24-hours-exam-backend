@@ -51,7 +51,6 @@ public class RolesAllowedFilter implements ContainerRequestFilter {
     // RolesAllowed on the class takes precedence over PermitAll
     ra = resourceInfo.getResourceClass().getAnnotation(RolesAllowed.class);
     if (assertRole(requestContext, ra)) {
-      return;
     }
   }
 

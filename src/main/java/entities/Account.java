@@ -3,7 +3,6 @@ package entities;
 import org.mindrot.jbcrypt.BCrypt;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -31,7 +30,7 @@ public class Account {
     @JoinTable(name = "accounts_has_roles",
             joinColumns = @JoinColumn(name = "account_ID"),
             inverseJoinColumns = @JoinColumn(name = "role_ID"))
-    private Set<Role> roles  = new LinkedHashSet<>();;
+    private Set<Role> roles  = new LinkedHashSet<>();
 
     @Column(name = "account_createdAt")
     private LocalDateTime accountCreatedAt;

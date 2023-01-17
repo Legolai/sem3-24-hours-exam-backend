@@ -26,6 +26,7 @@
             <property name="javax.persistence.jdbc.user" value="dev"/>
             <property name="javax.persistence.jdbc.password" value="ax2"/>
 
+
         </properties>
     </persistence-unit>
     

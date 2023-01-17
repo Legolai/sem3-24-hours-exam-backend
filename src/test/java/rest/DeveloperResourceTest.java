@@ -1,6 +1,5 @@
 package rest;
 
-
 import entities.*;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -8,7 +7,10 @@ import io.restassured.parsing.Parser;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import utils.EMF_Creator;
 
 import javax.persistence.EntityManager;
@@ -19,9 +21,7 @@ import java.net.URI;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
-
-class ProjectResourceTest {
-
+class DeveloperResourceTest {
     private static final int SERVER_PORT = 7777;
     private static final String SERVER_URL = "http://localhost/api";
 
@@ -36,6 +36,9 @@ class ProjectResourceTest {
     private Developer developer;
     private Project project1;
     private Project project2;
+
+    private ProjectHour projectHour1;
+    private Task task1;
 
     static HttpServer startServer() {
         ResourceConfig rc = ResourceConfig.forApplication(new ApplicationConfig());
@@ -95,9 +98,9 @@ class ProjectResourceTest {
             developer = new Developer(100.0, user);
             project1.addDeveloper(developer);
             developer.addProject(project1);
-            Task task1 = new Task("Do something", "A lot of work", project1);
+            task1 = new Task("Do something", "A lot of work", project1);
 
-            ProjectHour projectHour1 = new ProjectHour(10.0, "A lot of work", task1, developer);
+            projectHour1 = new ProjectHour(10.0, "A lot of work", task1, developer);
             ProjectHour projectHour2 = new ProjectHour(5.0, "some more work", task1, developer);
 
             em.persist(user);
@@ -111,8 +114,6 @@ class ProjectResourceTest {
 
             //System.out.println("Saved test data to database");
             em.getTransaction().commit();
-
-            em.refresh(developer);
         } finally {
             em.close();
         }
@@ -143,104 +144,58 @@ class ProjectResourceTest {
         given().when().get("/info").then().statusCode(200);
     }
 
-
     @Test
-    public void testRestGetAllProjects() {
+    void getDevelopersNotInProject() {
         login("admin@email.com", "test");
         given()
                 .contentType("application/json")
                 .accept(ContentType.JSON)
                 .header("x-access-token", securityToken)
                 .when()
-                .get("/projects").then()
+                .get("developers/project/"+project1.getProjectId()+"/not").then()
                 .statusCode(200)
-                .body("", hasSize(2));
+                .body("", hasSize(0));
     }
 
     @Test
-    public void testRestGetAllProjectsForAdmin() {
-        login("admin@email.com", "test");
-        given()
-                .contentType("application/json")
-                .accept(ContentType.JSON)
-                .header("x-access-token", securityToken)
-                .when()
-                .get("/projects/account/" + admin.getAccountId()).then()
-                .statusCode(200)
-                .body("", hasSize(2));
-    }
-
-
-
-    @Test
-    public void testRestGetInvoiceForProject() {
-        login("admin@email.com", "test");
-        given()
-                .contentType("application/json")
-                .accept(ContentType.JSON)
-                .header("x-access-token", securityToken)
-                .when()
-                .get("/projects/" + project1.getProjectId() + "/invoice").then()
-                .statusCode(200)
-                .body("records", hasSize(2));
-    }
-
-    @Test
-    public void testRestCreateProject() {
-
-        login("admin@email.com", "test");
-        String json = String.format("{accountId: %d, projectName:\"%s\", projectDescription: \"%s\"}",  admin.getAccountId(), "Project A", "Master Plan");
+    void createProjectHours() {
+        login("user@email.com", "test");
+        String json = String.format("{hoursSpent: %d, taskId: %d, accountId: %d, description: \"%s\"}", 10, task1.getTaskId(), developer.getAccount().getAccountId(), "I did something");
         given()
                 .contentType("application/json")
                 .body(json)
                 .accept(ContentType.JSON)
                 .header("x-access-token", securityToken)
                 .when()
-                .post("/projects").then()
+                .post("developers/project-hours").then()
                 .statusCode(200)
-                .body("projectName", equalTo("Project A"));
+                .body("projecthourId", notNullValue());
     }
 
     @Test
-    public void testRestGetFullDetailedProject(){
-        login("admin@email.com", "test");
+    void updateProjectHour() {
+        login("user@email.com", "test");
+        String json = String.format("{hoursSpendt: %d, taskId: %d, accountId: %d, description: \"%s\"}", 40, task1.getTaskId(), developer.getAccount().getAccountId(), "I did something");
         given()
                 .contentType("application/json")
+                .body(json)
                 .accept(ContentType.JSON)
                 .header("x-access-token", securityToken)
                 .when()
-                .get("/projects/"+project1.getProjectId()).then()
-                .statusCode(200)
-                .body("projectName", equalTo(project1.getProjectName()));
-    }
-    @Test
-    public void testRestGetAllDeveloperRelatedByAccountId(){
-        login(developer.getAccount().getAccountEmail(), "test");
-        given()
-                .contentType("application/json")
-                .accept(ContentType.JSON)
-                .header("x-access-token", securityToken)
-                .when()
-                .get("/projects/developer/account/"+project1.getProjectId()).then()
-                .statusCode(200)
-                .body("", hasSize(0));
-    }
-
-    @Test
-    public void testRestAddDevelopersToProject(){
-        login("admin@email.com", "test");
-        given()
-                .contentType("application/json")
-                .body("["+developer.getDeveloperId()+"]")
-                .header("x-access-token", securityToken)
-                .when()
-                .post("/projects/"+project2.getProjectId()+"/developers").then()
+                .put("developers/project-hours/" + projectHour1.getProjecthourId()).then()
                 .statusCode(200);
 
-
     }
 
-
-
-
+    @Test
+    void deleteProjectHour() {
+        login("user@email.com", "test");
+        given()
+                .contentType("application/json")
+                .accept(ContentType.JSON)
+                .header("x-access-token", securityToken)
+                .when()
+                .delete("developers/project-hours/" + projectHour1.getProjecthourId()).then()
+                .statusCode(200);
+    }
 }

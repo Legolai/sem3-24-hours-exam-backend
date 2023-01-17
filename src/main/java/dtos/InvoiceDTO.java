@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 public class InvoiceDTO {
 
     private Integer projectId;
+
+    private String projectName;
     private String projectDescription;
 
     private Double totalHoursUsed;
@@ -20,9 +22,9 @@ public class InvoiceDTO {
 
     public class InvoiceRow {
 
-        private Double hours;
-        private Double developerBillingPrHour;
-        private Double rowTotal;
+        private final Double hours;
+        private final Double developerBillingPrHour;
+        private final Double rowTotal;
 
         public InvoiceRow(Double hours, Double developerBillingPrHour) {
             this.hours = hours;
@@ -69,12 +71,60 @@ public class InvoiceDTO {
     public InvoiceDTO(Project project) {
         List<ProjectHour> projectHours = project.getDevelopers().stream().flatMap(developer -> developer.getProjectHours().stream()).collect(Collectors.toList());
         this.projectId = project.getProjectId();
+        this.projectName = project.getProjectName();
         this.projectDescription = project.getProjectDescription();
         this.totalHoursUsed = projectHours.stream().reduce(0.0, (acc, r) -> acc + r.getProjecthourHoursSpendt(), Double::sum);
         this.records = projectHours.stream().map(r -> new InvoiceRow(r.getProjecthourHoursSpendt(), r.getDeveloper().getDeveloperBillingPrHour())).collect(Collectors.toList());
         this.totalAmount = records.stream().reduce(0.0, (acc, r) -> acc + r.getRowTotal(), Double::sum);
     }
 
+    public Integer getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Integer projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    public String getProjectDescription() {
+        return projectDescription;
+    }
+
+    public void setProjectDescription(String projectDescription) {
+        this.projectDescription = projectDescription;
+    }
+
+    public Double getTotalHoursUsed() {
+        return totalHoursUsed;
+    }
+
+    public void setTotalHoursUsed(Double totalHoursUsed) {
+        this.totalHoursUsed = totalHoursUsed;
+    }
+
+    public List<InvoiceRow> getRecords() {
+        return records;
+    }
+
+    public void setRecords(List<InvoiceRow> records) {
+        this.records = records;
+    }
+
+    public Double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(Double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
 
     @Override
     public boolean equals(Object o) {

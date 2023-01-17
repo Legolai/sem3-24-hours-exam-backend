@@ -5,11 +5,9 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dtos.*;
-import entities.Developer;
 import errorhandling.API_Exception;
 import errorhandling.GenericExceptionMapper;
 import services.DeveloperService;
-import services.ProjectService;
 import utils.EMF_Creator;
 import utils.GsonLocalDateTime;
 
@@ -80,7 +78,30 @@ public class DeveloperResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateProjectHour(@PathParam("id") Integer projectHourId, String content) throws API_Exception {
-        
+        Double hoursSpent;
+        String description;
+        Long taskId;
+        Integer accountId;
+        try {
+            JsonObject json = JsonParser.parseString(content).getAsJsonObject();
+            hoursSpent = json.get("hoursSpendt").getAsDouble();
+            description = json.get("description").getAsString();
+            taskId = json.get("taskId").getAsLong();
+            accountId = json.get("accountId").getAsInt();
+        } catch (Exception e) {
+            throw new API_Exception("Malformed JSON Supplied", 400, e);
+        }
+
+        try {
+            DeveloperMiniDTO developer = DEVELOPER_SERVICE.getDeveloperTrimmedByAccountId(accountId);
+            ProjectHourUpdateDTO projectHourUpdateDTO = new ProjectHourUpdateDTO(hoursSpent, description, projectHourId, developer.getDeveloperId(), taskId);
+            DEVELOPER_SERVICE.updateProjectHour(projectHourUpdateDTO);
+            return Response.ok().build();
+
+        } catch (Exception ex) {
+            Logger.getLogger(GenericExceptionMapper.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new API_Exception("Failed to update a new time tracker!");
     }
 
     @DELETE
@@ -88,8 +109,9 @@ public class DeveloperResource {
     @Path("/project-hours/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteProjectHour(@PathParam("id") Integer projectHourId) throws API_Exception {
-
+    public Response deleteProjectHour(@PathParam("id") Integer projectHourId)  {
+        DEVELOPER_SERVICE.deleteProjectHour(projectHourId);
+        return Response.ok().build();
     }
 
 }

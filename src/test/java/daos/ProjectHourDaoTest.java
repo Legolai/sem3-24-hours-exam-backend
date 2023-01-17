@@ -118,7 +118,7 @@ class ProjectHourDaoTest {
     @Test
     public void deleteById() {
         assertDoesNotThrow(() -> facade.deleteById(projectHour1.getProjecthourId()));
-        assertEquals(null, facade.getById(projectHour1.getProjecthourId()));
+        assertNull(facade.getById(projectHour1.getProjecthourId()));
     }
 
 }

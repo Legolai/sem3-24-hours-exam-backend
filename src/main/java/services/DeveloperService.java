@@ -1,11 +1,11 @@
 package services;
 
 import daos.DeveloperDao;
-import daos.ProjectDao;
 import daos.ProjectHourDao;
 import dtos.DeveloperMiniDTO;
 import dtos.ProjectHourCreateDTO;
 import dtos.ProjectHourDTO;
+import dtos.ProjectHourUpdateDTO;
 import entities.Developer;
 import entities.ProjectHour;
 
@@ -71,7 +71,7 @@ public class DeveloperService {
         return DeveloperMiniDTO.listToDto(developers);
     }
 
-    public void updateProjectHour(ProjectHourCreateDTO dto) {
+    public void updateProjectHour(ProjectHourUpdateDTO dto) {
         projectHourDao.update(dto.toEntity());
     }
 

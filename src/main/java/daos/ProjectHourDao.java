@@ -33,6 +33,16 @@ public class ProjectHourDao implements IDao<ProjectHour, Integer> {
     }
 
     @Override
+    public void update(ProjectHour entity){
+        executeInsideTransaction((em) -> {
+            ProjectHour projectHour = em.find(ProjectHour.class, entity.getProjecthourId());
+            projectHour.setProjecthourDescription(entity.getProjecthourDescription());
+            projectHour.setProjecthourHoursSpendt(entity.getProjecthourHoursSpendt());
+            em.merge(projectHour);
+        });
+    }
+
+    @Override
     public List<ProjectHour> getAll() {
         return executeWithClose((em) -> {
             TypedQuery<ProjectHour> query = em.createQuery("SELECT ph FROM ProjectHour ph", ProjectHour.class);

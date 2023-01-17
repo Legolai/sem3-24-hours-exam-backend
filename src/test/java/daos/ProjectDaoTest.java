@@ -99,7 +99,7 @@ class ProjectDaoTest {
     @Test
     public void deleteById() {
         assertDoesNotThrow(() -> facade.deleteById(project2.getProjectId()));
-        assertEquals(null, facade.getById(project2.getProjectId()));
+        assertNull(facade.getById(project2.getProjectId()));
     }
 
 }

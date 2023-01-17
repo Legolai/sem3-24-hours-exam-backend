@@ -98,7 +98,7 @@ class AccountDaoTest {
     @Test
     public void deleteById() {
         assertDoesNotThrow(() -> facade.deleteById(account1.getAccountId()));
-        assertEquals(null, facade.getById(account1.getAccountId()));
+        assertNull(facade.getById(account1.getAccountId()));
     }
 
 }

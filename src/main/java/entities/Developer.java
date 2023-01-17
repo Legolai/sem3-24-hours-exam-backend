@@ -1,7 +1,6 @@
 package entities;
 
 import javax.persistence.*;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -21,14 +20,14 @@ public class Developer {
     @JoinColumn(name = "account_ID", nullable = false)
     private Account account;
 
-    @OneToMany(mappedBy = "developer")
+    @OneToMany(mappedBy = "developer", fetch = FetchType.LAZY)
     private Set<ProjectHour> projectHours = new LinkedHashSet<>();
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(name = "developers_has_projects",
             joinColumns = @JoinColumn(name = "developer_ID"),
             inverseJoinColumns = @JoinColumn(name = "project_ID"))
-    private Set<Project> projects  = new LinkedHashSet<>();
+    private Set<Project> projects = new LinkedHashSet<>();
 
 
     public Developer() {

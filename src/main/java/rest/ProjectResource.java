@@ -72,7 +72,7 @@ public class ProjectResource {
     @RolesAllowed({"admin", "developer"})
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getFullDetaildProject(@PathParam("id") Integer projectId) {
+    public Response getFullDetailedProject(@PathParam("id") Integer projectId) {
         ProjectFullDetailDTO projectDTO = PROJECT_SERVICE.getFullDetailedProject(projectId);
         return Response.ok().entity(GSON.toJson(projectDTO)).build();
     }

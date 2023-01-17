@@ -101,7 +101,7 @@ class DeveloperDaoTest {
     @Test
     public void deleteById() {
         assertDoesNotThrow(() -> facade.deleteById(dev1.getDeveloperId()));
-        assertEquals(null, facade.getById(dev1.getDeveloperId()));
+        assertNull(facade.getById(dev1.getDeveloperId()));
     }
 
 }

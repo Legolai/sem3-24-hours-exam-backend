@@ -2,15 +2,16 @@ package services;
 
 import daos.DeveloperDao;
 import daos.ProjectDao;
+import daos.ProjectHourDao;
 import dtos.InvoiceDTO;
 import dtos.ProjectCreateDTO;
 import dtos.ProjectDTO;
 import dtos.ProjectFullDetailDTO;
 import entities.Developer;
 import entities.Project;
+import entities.ProjectHour;
 
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -94,13 +95,26 @@ public class ProjectService {
     }
 
     public InvoiceDTO getProjectInvoice(Integer projectId){
-        List<Project> projects = projectDao.executeWithClose((em) -> {
-            TypedQuery<Project> query = em.createQuery("SELECT p FROM Project p JOIN FETCH p.developers d JOIN FETCH d.projectHours ph WHERE p.projectId = :projectId", Project.class);
+        Project project = projectDao.executeWithClose((em) -> {
+        TypedQuery<Project> query = em.createQuery("SELECT p FROM Project p join fetch p.developers d JOIN FETCH d.projectHours ph WHERE p.projectId = :projectId", Project.class);
             query.setParameter("projectId", projectId);
-            return query.getResultList();
+            List<Project> projects = query.getResultList();
+
+            if(projects.get(0) == null) return null;
+
+            Project refreshed = projects.get(0);
+            refreshed.getDevelopers().forEach(developer -> {
+                TypedQuery<ProjectHour> query2 = em.createQuery("SELECT p FROM ProjectHour p join p.developer d WHERE d.developerId = :devId", ProjectHour.class);
+                query2.setParameter("devId", developer.getDeveloperId());
+                developer.setProjectHours(query2.getResultList().stream().collect(Collectors.toSet()));
+            });
+
+            return refreshed;
+
         });
 
-        if(projects.isEmpty()) return null;
-        return new InvoiceDTO(projects.get(0));
+        if(project == null) return null;
+
+        return new InvoiceDTO(project);
     }
 }

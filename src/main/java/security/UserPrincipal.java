@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class UserPrincipal implements Principal {
 
-  private String email;
+  private final String email;
   private List<String> roles = new ArrayList<>();
 
   /* Create a UserPrincipal, given the Entity class User*/
