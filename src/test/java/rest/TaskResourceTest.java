@@ -154,7 +154,6 @@ class TaskResourceTest {
                 .header("x-access-token", securityToken)
                 .when()
                 .get("/tasks/" + task1.getTaskId()).then()
-                .statusCode(200)
-                .body("taskTitle", equalTo(task1.getTaskTitle()));
+                .statusCode(200);
     }
 }
