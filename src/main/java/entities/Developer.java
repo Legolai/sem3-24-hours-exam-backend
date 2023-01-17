@@ -24,7 +24,7 @@ public class Developer {
     @OneToMany(mappedBy = "developer")
     private Set<ProjectHour> projectHours = new LinkedHashSet<>();
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(name = "developers_has_projects",
             joinColumns = @JoinColumn(name = "developer_ID"),
             inverseJoinColumns = @JoinColumn(name = "project_ID"))

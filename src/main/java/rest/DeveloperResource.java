@@ -2,21 +2,26 @@ package rest;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import dtos.DeveloperMiniDTO;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import dtos.*;
+import entities.Developer;
+import errorhandling.API_Exception;
+import errorhandling.GenericExceptionMapper;
 import services.DeveloperService;
 import services.ProjectService;
 import utils.EMF_Creator;
 import utils.GsonLocalDateTime;
 
+import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManagerFactory;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Path("developers")
 public class DeveloperResource {
@@ -36,4 +41,55 @@ public class DeveloperResource {
         List<DeveloperMiniDTO> dtos = DEVELOPER_SERVICE.getDevelopersNotInProject(projectId);
         return Response.ok().entity(dtos).build();
     }
+
+    @POST
+    @RolesAllowed("developer")
+    @Path("/project-hours")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createProjectHours(String content) throws API_Exception {
+        Double hoursSpent;
+        String description;
+        Long taskId;
+        Integer accountId;
+        try {
+            JsonObject json = JsonParser.parseString(content).getAsJsonObject();
+            hoursSpent = json.get("hoursSpent").getAsDouble();
+            description = json.get("description").getAsString();
+            taskId = json.get("taskId").getAsLong();
+            accountId = json.get("accountId").getAsInt();
+        } catch (Exception e) {
+            throw new API_Exception("Malformed JSON Supplied", 400, e);
+        }
+
+        try {
+            DeveloperMiniDTO developer = DEVELOPER_SERVICE.getDeveloperTrimmedByAccountId(accountId);
+            ProjectHourCreateDTO projectHourCreateDTO = new ProjectHourCreateDTO(hoursSpent, description, taskId, developer.getDeveloperId());
+            ProjectHourDTO dto = DEVELOPER_SERVICE.createProjectHour(projectHourCreateDTO);
+            return Response.ok().entity(GSON.toJson(dto)).build();
+
+        } catch (Exception ex) {
+            Logger.getLogger(GenericExceptionMapper.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new API_Exception("Failed to create a new time tracker!");
+    }
+
+    @PUT
+    @RolesAllowed("developer")
+    @Path("/project-hours/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateProjectHour(@PathParam("id") Integer projectHourId, String content) throws API_Exception {
+        
+    }
+
+    @DELETE
+    @RolesAllowed("developer")
+    @Path("/project-hours/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteProjectHour(@PathParam("id") Integer projectHourId) throws API_Exception {
+
+    }
+
 }

@@ -35,6 +35,18 @@ public class DeveloperService {
         return instance;
     }
 
+    public DeveloperMiniDTO getDeveloperTrimmedByAccountId(Integer accountId) {
+        List<Developer> developers = developerDao.executeWithClose((em) -> {
+            TypedQuery<Developer> query = em.createQuery("SELECT d FROM Developer d JOIN d.account a WHERE a.accountId = :accountId ", Developer.class);
+            query.setParameter("accountId", accountId);
+            return query.getResultList();
+        });
+
+        if(developers.isEmpty()) return null;
+
+        return new DeveloperMiniDTO(developers.get(0));
+    }
+
     public ProjectHourDTO createProjectHour(ProjectHourCreateDTO dto) {
         ProjectHour projectHour = projectHourDao.create(dto.toEntity());
         return new ProjectHourDTO(projectHour);
@@ -50,13 +62,13 @@ public class DeveloperService {
         return ProjectHourDTO.listToDto(projectHours);
     }
 
-    public List<DeveloperMiniDTO> getDevelopersNotInProject(Integer projectId){
-        List<Developer> projectHours = developerDao.executeWithClose((em) -> {
-            TypedQuery<Developer> query = em.createQuery("SELECT d FROM Developer d INNER JOIN d.account a INNER JOIN d.projects p WHERE p.projectId != :projectId ", Developer.class);
+    public List<DeveloperMiniDTO> getDevelopersNotInProject(Integer projectId) {
+        List<Developer> developers = developerDao.executeWithClose((em) -> {
+            TypedQuery<Developer> query = em.createQuery("SELECT d FROM Developer d INNER JOIN d.account a LEFT JOIN d.projects p WHERE p.projectId != :projectId OR p.projectId IS NULL ", Developer.class);
             query.setParameter("projectId", projectId);
             return query.getResultList();
         });
-        return DeveloperMiniDTO.listToDto(projectHours);
+        return DeveloperMiniDTO.listToDto(developers);
     }
 
     public void updateProjectHour(ProjectHourCreateDTO dto) {

@@ -27,4 +27,29 @@ public class DeveloperMiniDTO {
     public static List<DeveloperMiniDTO> listToDto(List<Developer> entities) {
         return entities.stream().map(DeveloperMiniDTO::new).collect(Collectors.toList());
     }
+
+
+    public Integer getDeveloperId() {
+        return developerId;
+    }
+
+    public void setDeveloperId(Integer developerId) {
+        this.developerId = developerId;
+    }
+
+    public Integer getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(Integer accountId) {
+        this.accountId = accountId;
+    }
+
+    public String getAccountName() {
+        return accountName;
+    }
+
+    public void setAccountName(String accountName) {
+        this.accountName = accountName;
+    }
 }

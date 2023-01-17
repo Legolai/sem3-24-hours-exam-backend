@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @NamedQuery(name = "task.deleteAllRows", query = "DELETE from Task ")
@@ -28,7 +29,7 @@ public class Task {
     @Column(name = "task_updatedAt")
     private LocalDateTime taskUpdatedAt;
     @OneToMany(mappedBy = "task")
-    private Collection<ProjectHour> projectHoursByTaskId;
+    private Set<ProjectHour> projectHours;
     @ManyToOne
     @JoinColumn(name = "project_ID", nullable = false)
     private Project project;
@@ -36,7 +37,7 @@ public class Task {
     @JoinColumn(name = "task_parentTask_ID")
     private Task parentTask;
     @OneToMany(mappedBy = "parentTask")
-    private Collection<Task> subtasks;
+    private Set<Task> subtasks;
 
 
     @PrePersist
@@ -102,12 +103,12 @@ public class Task {
     }
 
 
-    public Collection<ProjectHour> getProjectHoursByTaskId() {
-        return projectHoursByTaskId;
+    public Set<ProjectHour> getProjectHours() {
+        return projectHours;
     }
 
-    public void setProjectHoursByTaskId(Collection<ProjectHour> projectHoursByTaskId) {
-        this.projectHoursByTaskId = projectHoursByTaskId;
+    public void setProjectHours(Set<ProjectHour> projectHours) {
+        this.projectHours = projectHours;
     }
 
     public Project getProject() {
@@ -126,11 +127,11 @@ public class Task {
         this.parentTask = parentTask;
     }
 
-    public Collection<Task> getSubtasks() {
+    public Set<Task> getSubtasks() {
         return subtasks;
     }
 
-    public void setSubtasks(Collection<Task> subtasks) {
+    public void setSubtasks(Set<Task> subtasks) {
         this.subtasks = subtasks;
     }
 

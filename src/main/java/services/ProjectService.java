@@ -51,9 +51,19 @@ public class ProjectService {
         return ProjectDTO.listToDto(projects);
     }
 
+    public List<ProjectDTO> getAllDevloperRelatedByAccountId(Integer accountId) {
+        List<Project> projects = projectDao.executeWithClose((em) -> {
+            TypedQuery<Project> query = em.createQuery("SELECT p FROM Developer d JOIN d.account a JOIN d.projects p WHERE a.accountId = :accountId", Project.class);
+            query.setParameter("accountId", accountId);
+            return  query.getResultList();
+        });
+
+        return ProjectDTO.listToDto(projects);
+    }
+
     public ProjectFullDetailDTO getFullDetailedProject(Integer projectId) {
         List<Project> projects = projectDao.executeWithClose((em) -> {
-            TypedQuery<Project> query = em.createQuery("SELECT p FROM Project p INNER JOIN p.developers d INNER JOIN p.account a INNER JOIN p.tasks t WHERE p.projectId = :projectId", Project.class);
+            TypedQuery<Project> query = em.createQuery("SELECT p FROM Project p JOIN FETCH p.developers d JOIN FETCH p.account a JOIN FETCH p.tasks t WHERE p.projectId = :projectId", Project.class);
             query.setParameter("projectId", projectId);
             return  query.getResultList();
         });
@@ -74,6 +84,7 @@ public class ProjectService {
         List<Developer> developers = devs.stream().map(devId -> {
             Developer developer = developerDao.getById(devId);
             developer.addProject(project);
+            developerDao.update(developer);
             return developer;
         }).collect(Collectors.toList());
 
@@ -84,7 +95,7 @@ public class ProjectService {
 
     public InvoiceDTO getProjectInvoice(Integer projectId){
         List<Project> projects = projectDao.executeWithClose((em) -> {
-            TypedQuery<Project> query = em.createQuery("SELECT p FROM Project p INNER JOIN p.developers d INNER JOIN d.projectHours ph WHERE p.projectId = :projectId", Project.class);
+            TypedQuery<Project> query = em.createQuery("SELECT p FROM Project p JOIN FETCH p.developers d JOIN FETCH d.projectHours ph WHERE p.projectId = :projectId", Project.class);
             query.setParameter("projectId", projectId);
             return query.getResultList();
         });

@@ -93,6 +93,7 @@ class ProjectServiceTest {
     public void getProjectInvoice(){
         InvoiceDTO actual = facade.getProjectInvoice(project.getProjectId());
         InvoiceDTO expected = new InvoiceDTO(project);
+        System.out.println(expected);
         assertEquals(expected,actual);
     }
 

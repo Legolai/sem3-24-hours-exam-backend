@@ -69,7 +69,7 @@ public class ProjectResource {
     }
 
     @GET
-    @RolesAllowed("admin")
+    @RolesAllowed({"admin", "developer"})
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFullDetaildProject(@PathParam("id") Integer projectId) {
@@ -84,6 +84,15 @@ public class ProjectResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllByAccountId(@PathParam("id") Integer accountId) {
         List<ProjectDTO> projectDTOS = PROJECT_SERVICE.getAllByAccountId(accountId);
+        return Response.ok().entity(GSON.toJson(projectDTOS)).build();
+    }
+
+    @GET
+    @RolesAllowed("developer")
+    @Path("developer/account/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllDeveloperRelatedByAccountId(@PathParam("id") Integer accountId) {
+        List<ProjectDTO> projectDTOS = PROJECT_SERVICE.getAllDevloperRelatedByAccountId(accountId);
         return Response.ok().entity(GSON.toJson(projectDTOS)).build();
     }
 
@@ -107,6 +116,7 @@ public class ProjectResource {
         PROJECT_SERVICE.addDevelopersToProject(ids, projectId);
         return Response.ok().build();
     }
+
 }
 
 
